@@ -7,11 +7,26 @@ export const revalidate = 60
 
 export default async function HomePage() {
   const supabase = await createClient()
-  const { data: peliculas } = await supabase
+  const { data: peliculas, error } = await supabase
     .from('peliculas')
     .select('*')
     .eq('estado', 'activa')
     .order('created_at', { ascending: false })
+
+  if (error) {
+    return (
+      <div style={{ maxWidth: 600, margin: '4rem auto', padding: '2rem', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>⚙️</div>
+        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Configurando la base de datos</h1>
+        <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 24 }}>
+          Aún no se han ejecutado los scripts SQL en Supabase. Sigue los pasos de configuración para activar la app.
+        </p>
+        <div style={{ background: '#12121e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '1rem', textAlign: 'left', fontFamily: 'monospace', fontSize: 12, color: '#f97316' }}>
+          {error.message}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
