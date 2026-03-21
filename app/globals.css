@@ -190,3 +190,14 @@ body {
   font-size: 13px; font-weight: 700; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--primary); margin-bottom: 8px;
 }
+
+/* Admin responsive helpers */
+@media (max-width: 640px) {
+  .page { padding: 1.25rem 1rem; }
+  .admin-grid-2 { grid-template-columns: 1fr !important; }
+}
+
+/* Funcion page responsive */
+@media (max-width: 640px) {
+  .pelicula-grid { grid-template-columns: 1fr !important; }
+}
