@@ -2,46 +2,80 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Pelicula } from '@/lib/supabase/types'
+import { useState } from 'react'
 
 export function PeliculaCard({ pelicula }: { pelicula: Pelicula }) {
+  const [hovered, setHovered] = useState(false)
+
+  const clsColor: Record<string, string> = {
+    'Todo Público': 'badge-green',
+    '+7': 'badge-green',
+    '+13': 'badge-amber',
+    '+16': 'badge-amber',
+    '+18': 'badge-red',
+  }
+
   return (
-    <Link href={`/pelicula/${pelicula.id}`} style={{ textDecoration: 'none' }}>
-      <div style={{
-        background: '#12121e', borderRadius: 16, overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer',
-        transition: 'transform 0.2s, border-color 0.2s',
-      }}
-        onMouseEnter={e => {
-          const el = e.currentTarget as HTMLDivElement
-          el.style.transform = 'translateY(-4px)'
-          el.style.borderColor = 'rgba(249,115,22,0.4)'
-        }}
-        onMouseLeave={e => {
-          const el = e.currentTarget as HTMLDivElement
-          el.style.transform = 'translateY(0)'
-          el.style.borderColor = 'rgba(255,255,255,0.06)'
+    <Link href={`/pelicula/${pelicula.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          background: 'white', borderRadius: 18, overflow: 'hidden',
+          border: '1px solid #e2e8f0', cursor: 'pointer',
+          transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+          transform: hovered ? 'translateY(-6px) scale(1.01)' : 'translateY(0) scale(1)',
+          boxShadow: hovered
+            ? '0 20px 60px rgba(37,99,235,0.15), 0 4px 16px rgba(0,0,0,0.08)'
+            : '0 2px 8px rgba(0,0,0,0.06)',
         }}
       >
-        <div style={{ position: 'relative', aspectRatio: '2/3', background: '#1a1a2e' }}>
+        {/* Poster */}
+        <div style={{ position: 'relative', aspectRatio: '2/3', background: '#f1f5f9', overflow: 'hidden' }}>
           {pelicula.imagen_url ? (
-            <Image src={pelicula.imagen_url} alt={pelicula.titulo} fill style={{ objectFit: 'cover' }} unoptimized />
+            <Image
+              src={pelicula.imagen_url} alt={pelicula.titulo}
+              fill style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }}
+              unoptimized
+            />
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: 48 }}>🎬</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: 56, color: '#cbd5e1' }}>🎬</div>
           )}
+
+          {/* Overlay on hover */}
           <div style={{
-            position: 'absolute', top: 8, right: 8,
-            background: 'rgba(0,0,0,0.8)', borderRadius: 6, padding: '2px 8px',
-            fontSize: 11, fontWeight: 700, color: '#f97316',
-          }}>{pelicula.clasificacion}</div>
-        </div>
-        <div style={{ padding: '1rem' }}>
-          <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 6, lineHeight: 1.3, color: 'white' }}>{pelicula.titulo}</h3>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4 }}>{pelicula.genero}</span>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4 }}>{pelicula.duracion} min</span>
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to top, rgba(10,15,30,0.8) 0%, transparent 50%)',
+            opacity: hovered ? 1 : 0, transition: 'opacity 0.3s',
+            display: 'flex', alignItems: 'flex-end', padding: '1rem',
+          }}>
+            <div style={{
+              background: '#2563eb', color: 'white',
+              padding: '8px 16px', borderRadius: 10,
+              fontSize: 13, fontWeight: 700, width: '100%', textAlign: 'center',
+              transform: hovered ? 'translateY(0)' : 'translateY(10px)',
+              transition: 'transform 0.3s',
+            }}>
+              Ver funciones →
+            </div>
           </div>
-          <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(249,115,22,0.1)', borderRadius: 8, textAlign: 'center', color: '#f97316', fontSize: 13, fontWeight: 600 }}>
-            Ver funciones →
+
+          {/* Clasificación badge */}
+          <div style={{ position: 'absolute', top: 10, left: 10 }}>
+            <span className={`badge ${clsColor[pelicula.clasificacion] || 'badge-gray'}`} style={{ fontSize: 10 }}>
+              {pelicula.clasificacion}
+            </span>
+          </div>
+        </div>
+
+        {/* Info */}
+        <div style={{ padding: '1rem' }}>
+          <h3 style={{ fontWeight: 800, fontSize: 15, color: '#0a0f1e', marginBottom: 6, lineHeight: 1.3 }}>
+            {pelicula.titulo}
+          </h3>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <span className="badge badge-blue" style={{ fontSize: 10 }}>{pelicula.genero}</span>
+            <span className="badge badge-gray" style={{ fontSize: 10 }}>{pelicula.duracion} min</span>
           </div>
         </div>
       </div>
