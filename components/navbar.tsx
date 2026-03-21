@@ -29,7 +29,12 @@ export function Navbar() {
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
-      if (!session?.user) setProfile(null)
+      if (!session?.user) {
+        setProfile(null)
+      } else {
+        supabase.from('profiles').select('*').eq('id', session.user.id).single()
+          .then(({ data: p }) => setProfile(p))
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
