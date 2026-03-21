@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { Asiento } from '@/lib/supabase/types'
-import { IconTicket, IconMoney, IconSeat, IconCheck } from './icons'
+import { IconTicket, IconSeat, IconCheck } from './icons'
+import { SeatIcon } from './seat-icon'
 
 interface Props {
   asientos: Asiento[]
@@ -70,76 +71,67 @@ export function SeatSelector({ asientos, idsOcupados, funcionId, precio, userId 
         ))}
       </div>
 
-      {/* Sala container */}
+      {/* Sala */}
       <div className="card animate-fade-up delay-1" style={{ padding: '2rem 1.5rem', marginBottom: '1.5rem' }}>
 
         {/* Pantalla */}
         <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
-          <div style={{
-            maxWidth: 480, margin: '0 auto',
-            height: 6, borderRadius: '0 0 60% 60% / 0 0 20px 20px',
-            background: 'linear-gradient(90deg, transparent 0%, #2563eb 30%, #2563eb 70%, transparent 100%)',
-            opacity: 0.6, marginBottom: 10,
-          }} />
-          <div style={{
-            maxWidth: 520, margin: '0 auto',
-            height: 2, background: 'linear-gradient(90deg, transparent, #e2e8f0, transparent)',
-            marginBottom: 8,
-          }} />
-          <p style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.4em', textTransform: 'uppercase' }}>PANTALLA</p>
+          <div style={{ maxWidth: 500, margin: '0 auto 6px', height: 8, borderRadius: '0 0 50% 50%', background: 'linear-gradient(90deg, transparent, #2563eb 25%, #3b82f6 50%, #2563eb 75%, transparent)', opacity: 0.7 }} />
+          <div style={{ maxWidth: 540, margin: '0 auto 10px', height: 2, background: 'linear-gradient(90deg, transparent, #bfdbfe, transparent)' }} />
+          <span style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.4em', textTransform: 'uppercase' }}>PANTALLA</span>
         </div>
 
         {/* Leyenda */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: '2rem', flexWrap: 'wrap' }}>
           {[
-            { bg: '#dbeafe', border: '#93c5fd', label: 'Disponible' },
-            { bg: '#2563eb', border: '#1d4ed8', label: 'Seleccionado' },
-            { bg: '#f1f5f9', border: '#e2e8f0', label: 'Ocupado' },
-          ].map(({ bg, border, label }) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <div style={{ width: 22, height: 18, borderRadius: '4px 4px 2px 2px', background: bg, border: `1.5px solid ${border}` }} />
+            { state: 'available' as const, label: 'Disponible' },
+            { state: 'selected'  as const, label: 'Seleccionado' },
+            { state: 'occupied'  as const, label: 'Ocupado' },
+          ].map(({ state, label }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <SeatIcon state={state} size={20} />
               <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{label}</span>
             </div>
           ))}
         </div>
 
-        {/* Grid de asientos — centrado */}
+        {/* Grid de asientos */}
         <div style={{ overflowX: 'auto', paddingBottom: 8 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', width: 'fit-content', margin: '0 auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center', width: 'fit-content', margin: '0 auto' }}>
             {filas.map(fila => {
               const asientosFila = asientos.filter(a => a.fila === fila).sort((a, b) => a.columna - b.columna)
               return (
-                <div key={fila} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {/* Label fila */}
-                  <span style={{ width: 22, fontSize: 11, fontWeight: 800, color: '#cbd5e1', textAlign: 'center', flexShrink: 0, userSelect: 'none' }}>{fila}</span>
+                <div key={fila} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {/* Label izq */}
+                  <span style={{ width: 20, fontSize: 11, fontWeight: 800, color: '#94a3b8', textAlign: 'center', flexShrink: 0, userSelect: 'none' }}>{fila}</span>
                   {/* Asientos */}
-                  <div style={{ display: 'flex', gap: 4 }}>
+                  <div style={{ display: 'flex', gap: 3 }}>
                     {asientosFila.map(asiento => {
                       const ocupado = ocupadosSet.has(asiento.id)
                       const sel = seleccionados.includes(asiento.id)
+                      const state = ocupado ? 'occupied' : sel ? 'selected' : 'available'
                       return (
                         <button
                           key={asiento.id}
                           onClick={() => toggle(asiento.id)}
                           disabled={ocupado}
-                          title={`${asiento.fila}${asiento.columna}`}
+                          title={`Fila ${asiento.fila} — Asiento ${asiento.columna}`}
                           style={{
-                            width: 28, height: 22,
-                            borderRadius: '4px 4px 2px 2px',
-                            border: ocupado ? '1.5px solid #e2e8f0' : sel ? '1.5px solid #1d4ed8' : '1.5px solid #93c5fd',
-                            background: ocupado ? '#f1f5f9' : sel ? '#2563eb' : '#dbeafe',
+                            background: 'none', border: 'none', padding: 0,
                             cursor: ocupado ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.12s',
-                            transform: sel ? 'scale(1.12)' : 'scale(1)',
-                            flexShrink: 0,
-                            padding: 0,
+                            transition: 'transform 0.12s',
+                            transform: sel ? 'scale(1.15) translateY(-2px)' : 'scale(1)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            outline: 'none',
                           }}
-                        />
+                        >
+                          <SeatIcon state={state} size={26} />
+                        </button>
                       )
                     })}
                   </div>
-                  {/* Label fila derecha */}
-                  <span style={{ width: 22, fontSize: 11, fontWeight: 800, color: '#cbd5e1', textAlign: 'center', flexShrink: 0, userSelect: 'none' }}>{fila}</span>
+                  {/* Label der */}
+                  <span style={{ width: 20, fontSize: 11, fontWeight: 800, color: '#94a3b8', textAlign: 'center', flexShrink: 0, userSelect: 'none' }}>{fila}</span>
                 </div>
               )
             })}
@@ -147,7 +139,7 @@ export function SeatSelector({ asientos, idsOcupados, funcionId, precio, userId 
         </div>
       </div>
 
-      {/* Resumen de compra */}
+      {/* Resumen */}
       <div className="card animate-fade-up delay-2" style={{ padding: '1.75rem', maxWidth: 480, margin: '0 auto' }}>
         <h3 style={{ fontWeight: 900, fontSize: 16, color: '#0a0f1e', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: 8 }}>
           <IconTicket size={18} color="#2563eb" /> Resumen de compra
@@ -155,12 +147,13 @@ export function SeatSelector({ asientos, idsOcupados, funcionId, precio, userId 
 
         {seleccionados.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '1.5rem 0', color: '#94a3b8' }}>
-            <IconSeat size={28} color="#e2e8f0" style={{ margin: '0 auto 10px', display: 'block' }} />
+            <div style={{ margin: '0 auto 12px', width: 'fit-content' }}>
+              <SeatIcon state="available" size={32} />
+            </div>
             <p style={{ fontSize: 14, fontWeight: 500 }}>Selecciona tus asientos en el mapa</p>
           </div>
         ) : (
           <div>
-            {/* Asientos seleccionados */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
               {seleccionados.map(id => {
                 const a = asientos.find(x => x.id === id)
@@ -188,24 +181,12 @@ export function SeatSelector({ asientos, idsOcupados, funcionId, precio, userId 
           </div>
         )}
 
-        <button
-          onClick={comprar}
-          disabled={loading || seleccionados.length === 0}
-          className="btn-primary"
-          style={{
-            width: '100%', marginTop: 16, padding: '14px', fontSize: 15,
-            justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8,
-            opacity: (!seleccionados.length || loading) ? 0.45 : 1,
-            cursor: (!seleccionados.length || loading) ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {loading ? (
-            <>Procesando compra...</>
-          ) : seleccionados.length ? (
-            <><IconCheck size={16} color="white" /> Comprar {seleccionados.length} tiquete{seleccionados.length > 1 ? 's' : ''} — ${total.toLocaleString('es-CO')}</>
-          ) : (
-            <><IconSeat size={16} color="white" style={{ opacity: 0.5 }} /> Selecciona asientos</>
-          )}
+        <button onClick={comprar} disabled={loading || seleccionados.length === 0} className="btn-primary"
+          style={{ width: '100%', marginTop: 16, padding: '14px', fontSize: 15, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8, opacity: (!seleccionados.length || loading) ? 0.45 : 1, cursor: (!seleccionados.length || loading) ? 'not-allowed' : 'pointer' }}>
+          {loading ? 'Procesando...' : seleccionados.length
+            ? <><IconCheck size={16} color="white" /> Comprar {seleccionados.length} tiquete{seleccionados.length > 1 ? 's' : ''} — ${total.toLocaleString('es-CO')}</>
+            : <><IconSeat size={16} color="white" style={{ opacity: 0.5 }} /> Selecciona asientos</>
+          }
         </button>
       </div>
     </div>
